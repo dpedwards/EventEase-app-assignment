@@ -1,0 +1,51 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@using EventEase.Services
+@inject UserSessionService UserSession
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            @if (UserSession.IsLoggedIn)
+            {
+                <span class="me-3">Welcome, @UserSession.UserName!</span>
+                <button class="btn btn-sm btn-outline-danger" @onclick="Logout">Logout</button>
+            }
+            else
+            {
+                <button class="btn btn-sm btn-outline-primary" @onclick="Login">Login (Demo)</button>
+            }
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="ms-3">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        UserSession.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        UserSession.OnChange -= StateHasChanged;
+    }
+
+    private void Login()
+    {
+        UserSession.Login("DemoUser");
+    }
+
+    private void Logout()
+    {
+        UserSession.Logout();
+    }
+}
