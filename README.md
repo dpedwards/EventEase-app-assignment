@@ -1,4 +1,9 @@
-# Copilot Assistance Summary
+Live Demo
+
+<https://dpedwards.github.io/EventEase-app-assignment/>
+
+
+Copilot Assistance Summary
 
 ## Activity 1: Foundation
 
