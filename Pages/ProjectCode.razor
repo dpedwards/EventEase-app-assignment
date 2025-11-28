@@ -1,0 +1,307 @@
+@page "/project-code"
+
+<h3>Project Structure and Code</h3>
+
+<p>
+    You can view the full source code on GitHub: 
+    <a href="https://github.com/dpedwards/EventEase-app-assignment" target="_blank">https://github.com/dpedwards/EventEase-app-assignment</a>
+</p>
+
+<h4>File Structure</h4>
+<pre>
+EventEase-app-assignment/
+├── Components/
+│   └── EventCard.razor
+├── Layout/
+│   ├── MainLayout.razor
+│   └── NavMenu.razor
+├── Models/
+│   └── Event.cs
+├── Pages/
+│   ├── CopilotSummary.razor
+│   ├── EventDetails.razor
+│   ├── EventList.razor
+│   ├── ProjectCode.razor
+│   └── Registration.razor
+├── Services/
+│   └── UserSessionService.cs
+├── App.razor
+└── Program.cs
+</pre>
+
+<h4>Key Files</h4>
+
+<h5>Program.cs</h5>
+<pre><code>
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using EventEase;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add&lt;App&gt;("#app");
+builder.RootComponents.Add&lt;HeadOutlet&gt;("head::after");
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddScoped&lt;EventEase.Services.UserSessionService&gt;();
+
+await builder.Build().RunAsync();
+</code></pre>
+
+<h5>App.razor</h5>
+<pre><code>
+&lt;Router AppAssembly="@@typeof(App).Assembly"&gt;
+    &lt;Found Context="routeData"&gt;
+        &lt;RouteView RouteData="@@routeData" DefaultLayout="@@typeof(MainLayout)" /&gt;
+        &lt;FocusOnNavigate RouteData="@@routeData" Selector="h1" /&gt;
+    &lt;/Found&gt;
+    &lt;NotFound&gt;
+        &lt;PageTitle&gt;Not found&lt;/PageTitle&gt;
+        &lt;LayoutView Layout="@@typeof(MainLayout)"&gt;
+            &lt;p role="alert"&gt;Sorry, there's nothing at this address.&lt;/p&gt;
+        &lt;/LayoutView&gt;
+    &lt;/NotFound&gt;
+&lt;/Router&gt;
+</code></pre>
+
+<h5>Models/Event.cs</h5>
+<pre><code>
+using System.ComponentModel.DataAnnotations;
+
+namespace EventEase.Models
+{
+    public class Event
+    {
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "Name is required")]
+        [StringLength(50, ErrorMessage = "Name is too long")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public DateTime Date { get; set; }
+
+        [Required(ErrorMessage = "Location is required")]
+        public string Location { get; set; } = string.Empty;
+    }
+}
+</code></pre>
+
+<h5>Services/UserSessionService.cs</h5>
+<pre><code>
+namespace EventEase.Services
+{
+    public class UserSessionService
+    {
+        public string UserName { get; private set; } = string.Empty;
+        public bool IsLoggedIn => !string.IsNullOrEmpty(UserName);
+
+        public event Action? OnChange;
+
+        public void Login(string userName)
+        {
+            UserName = userName;
+            NotifyStateChanged();
+        }
+
+        public void Logout()
+        {
+            UserName = string.Empty;
+            NotifyStateChanged();
+        }
+
+        private void NotifyStateChanged() => OnChange?.Invoke();
+    }
+}
+</code></pre>
+
+<h5>Components/EventCard.razor</h5>
+<pre><code>
+@@using EventEase.Models
+
+&lt;div class="card mb-3" style="max-width: 540px;"&gt;
+    &lt;div class="row g-0"&gt;
+        &lt;div class="col-md-8"&gt;
+            &lt;div class="card-body"&gt;
+                &lt;h5 class="card-title"&gt;@@EventItem.Name&lt;/h5&gt;
+                &lt;p class="card-text"&gt;&lt;strong&gt;Date:&lt;/strong&gt; @@EventItem.Date.ToShortDateString()&lt;/p&gt;
+                &lt;p class="card-text"&gt;&lt;strong&gt;Location:&lt;/strong&gt; @@EventItem.Location&lt;/p&gt;
+                
+                &lt;div class="mt-3"&gt;
+                    &lt;h6&gt;Edit Event Details (Two-way Binding Demo)&lt;/h6&gt;
+                    &lt;EditForm Model="@@EventItem"&gt;
+                        &lt;DataAnnotationsValidator /&gt;
+                        &lt;ValidationSummary /&gt;
+                        &lt;div class="mb-2"&gt;
+                            &lt;label&gt;Name:&lt;/label&gt;
+                            &lt;InputText @@bind-Value="EventItem.Name" class="form-control" /&gt;
+                        &lt;/div&gt;
+                        &lt;div class="mb-2"&gt;
+                            &lt;label&gt;Date:&lt;/label&gt;
+                            &lt;InputDate @@bind-Value="EventItem.Date" class="form-control" /&gt;
+                        &lt;/div&gt;
+                        &lt;div class="mb-2"&gt;
+                            &lt;label&gt;Location:&lt;/label&gt;
+                            &lt;InputText @@bind-Value="EventItem.Location" class="form-control" /&gt;
+                        &lt;/div&gt;
+                    &lt;/EditForm&gt;
+                &lt;/div&gt;
+
+                &lt;a href="event-details/@@EventItem.Id" class="btn btn-primary mt-2"&gt;View Details&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+@@code {
+    [Parameter]
+    public Event EventItem { get; set; } = new Event();
+}
+</code></pre>
+
+<h5>Pages/EventList.razor</h5>
+<pre><code>
+@@page "/"
+@@page "/events"
+@@using EventEase.Models
+@@using EventEase.Components
+
+&lt;h3&gt;Upcoming Events&lt;/h3&gt;
+
+&lt;div class="container"&gt;
+    @@foreach (var evt in Events)
+    {
+        &lt;EventCard EventItem="evt" /&gt;
+    }
+&lt;/div&gt;
+
+@@code {
+    private List&lt;Event&gt; Events = new List&lt;Event&gt;
+    {
+        new Event { Id = 1, Name = "Tech Conference 2025", Date = new DateTime(2025, 11, 15), Location = "Convention Center" },
+        new Event { Id = 2, Name = "Music Festival", Date = new DateTime(2025, 12, 05), Location = "City Park" },
+        new Event { Id = 3, Name = "Art Expo", Date = new DateTime(2026, 01, 20), Location = "Art Gallery" }
+    };
+}
+</code></pre>
+
+<h5>Pages/EventDetails.razor</h5>
+<pre><code>
+@@page "/event-details/{Id:int}"
+@@using EventEase.Models
+
+&lt;h3&gt;Event Details&lt;/h3&gt;
+
+@@if (evt != null)
+{
+    &lt;div class="card"&gt;
+        &lt;div class="card-header"&gt;
+            Event #@@evt.Id
+        &lt;/div&gt;
+        &lt;div class="card-body"&gt;
+            &lt;h5 class="card-title"&gt;@@evt.Name&lt;/h5&gt;
+            &lt;p class="card-text"&gt;&lt;strong&gt;Date:&lt;/strong&gt; @@evt.Date.ToShortDateString()&lt;/p&gt;
+            &lt;p class="card-text"&gt;&lt;strong&gt;Location:&lt;/strong&gt; @@evt.Location&lt;/p&gt;
+            
+            &lt;div class="mt-3 mb-3 p-3 border rounded bg-light"&gt;
+                &lt;h6&gt;Attendance Tracker&lt;/h6&gt;
+                &lt;p&gt;Current Attendees: &lt;strong&gt;@@attendeeCount&lt;/strong&gt;&lt;/p&gt;
+                &lt;button class="btn btn-info btn-sm" @@onclick="CheckIn"&gt;Check In&lt;/button&gt;
+            &lt;/div&gt;
+
+            &lt;a href="registration/@@evt.Id" class="btn btn-success"&gt;Register&lt;/a&gt;
+            &lt;a href="events" class="btn btn-secondary"&gt;Back to List&lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+}
+else
+{
+    &lt;p&gt;Event not found.&lt;/p&gt;
+}
+
+@@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Event? evt;
+    private int attendeeCount = 0;
+
+    private void CheckIn()
+    {
+        attendeeCount++;
+    }
+
+    protected override void OnInitialized()
+    {
+        // Mock data lookup
+        var events = new List&lt;Event&gt;
+        {
+            new Event { Id = 1, Name = "Tech Conference 2025", Date = new DateTime(2025, 11, 15), Location = "Convention Center" },
+            new Event { Id = 2, Name = "Music Festival", Date = new DateTime(2025, 12, 05), Location = "City Park" },
+            new Event { Id = 3, Name = "Art Expo", Date = new DateTime(2026, 01, 20), Location = "Art Gallery" }
+        };
+
+        evt = events.FirstOrDefault(e => e.Id == Id);
+    }
+}
+</code></pre>
+
+<h5>Pages/Registration.razor</h5>
+<pre><code>
+@@page "/registration/{EventId:int}"
+@@using EventEase.Models
+@@using System.ComponentModel.DataAnnotations
+
+&lt;h3&gt;Registration&lt;/h3&gt;
+
+&lt;p&gt;Registering for Event ID: @@EventId&lt;/p&gt;
+
+@@if (submitted)
+{
+    &lt;div class="alert alert-success"&gt;Registration successful!&lt;/div&gt;
+}
+else
+{
+    &lt;EditForm Model="@@registrationModel" OnValidSubmit="HandleValidSubmit"&gt;
+        &lt;DataAnnotationsValidator /&gt;
+        &lt;ValidationSummary /&gt;
+
+        &lt;div class="mb-3"&gt;
+            &lt;label for="name" class="form-label"&gt;Name&lt;/label&gt;
+            &lt;InputText id="name" class="form-control" @@bind-Value="registrationModel.Name" /&gt;
+        &lt;/div&gt;
+        &lt;div class="mb-3"&gt;
+            &lt;label for="email" class="form-label"&gt;Email address&lt;/label&gt;
+            &lt;InputText id="email" class="form-control" @@bind-Value="registrationModel.Email" /&gt;
+        &lt;/div&gt;
+        &lt;button type="submit" class="btn btn-primary"&gt;Submit&lt;/button&gt;
+    &lt;/EditForm&gt;
+}
+
+&lt;div class="mt-3"&gt;
+    &lt;a href="events"&gt;Back to Events&lt;/a&gt;
+&lt;/div&gt;
+
+@@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private RegistrationModel registrationModel = new RegistrationModel();
+    private bool submitted = false;
+
+    private void HandleValidSubmit()
+    {
+        submitted = true;
+        // Here you would typically call a service to save the registration
+    }
+
+    public class RegistrationModel
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+    }
+}
+</code></pre>
