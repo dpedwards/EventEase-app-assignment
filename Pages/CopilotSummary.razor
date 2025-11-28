@@ -1,0 +1,24 @@
+@page "/copilot-summary"
+
+<h3>Copilot Assistance Summary</h3>
+
+<h4>Activity 1: Foundation</h4>
+<ul>
+    <li><strong>Component Generation</strong>: Copilot helped generate the <code>EventCard</code> component structure, suggesting the use of parameters for passing event data.</li>
+    <li><strong>Data Binding</strong>: Copilot suggested the syntax for two-way data binding (<code>@bind</code>) and how to apply it to input fields within the component.</li>
+    <li><strong>Routing</strong>: Copilot assisted in defining the <code>@page</code> directives for <code>EventList</code>, <code>EventDetails</code>, and <code>Registration</code> pages, and how to use <code>NavLink</code> in the navigation menu.</li>
+</ul>
+
+<h4>Activity 2: Debugging and Optimization</h4>
+<ul>
+    <li><strong>Input Validation</strong>: Copilot recommended using <code>DataAnnotations</code> (like <code>[Required]</code>) on the <code>Event</code> model and wrapping inputs in an <code>EditForm</code> with <code>DataAnnotationsValidator</code> to handle validation logic automatically.</li>
+    <li><strong>Routing Errors</strong>: Copilot identified that handling invalid routes requires a <code>NotFound</code> template in the <code>App.razor</code> component or a dedicated page, ensuring users see a friendly message instead of a blank screen.</li>
+    <li><strong>Performance</strong>: Copilot suggested efficient rendering practices, such as using the <code>&lt;Virtualize&gt;</code> component for handling large lists of events in <code>EventList.razor</code> to improve rendering performance.</li>
+</ul>
+
+<h4>Activity 3: Advanced Features</h4>
+<ul>
+    <li><strong>Registration Form</strong>: Copilot generated the <code>Registration</code> form code, including the <code>EditForm</code> setup, validation rules for email and name, and the submission handler.</li>
+    <li><strong>State Management</strong>: Copilot helped design the <code>UserSessionService</code> to track user login state and demonstrated how to register it as a scoped service in <code>Program.cs</code> and inject it into <code>MainLayout</code>.</li>
+    <li><strong>Attendance Tracker</strong>: Copilot provided the logic for a simple counter in <code>EventDetails</code> to simulate an attendance tracker, showing how to update local state in response to user actions.</li>
+</ul>
